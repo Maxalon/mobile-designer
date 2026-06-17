@@ -1,0 +1,64 @@
+name: Board Designer Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'board-designer/**'
+      - '.github/workflows/board-designer.yml'
+  pull_request:
+    paths:
+      - 'board-designer/**'
+      - '.github/workflows/board-designer.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build web designer bundle
+        working-directory: board-designer/web
+        run: |
+          npm ci
+          npm run test
+          npm run build
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('board-designer/android/**/*.gradle*', 'board-designer/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x board-designer/android/gradlew
+
+      - name: Assemble debug APK
+        working-directory: board-designer/android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-designer-debug-${{ github.run_number }}
+          path: board-designer/android/app/build/outputs/apk/debug/*.apk

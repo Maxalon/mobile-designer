@@ -1,0 +1,193 @@
+/* Designer tool chrome. The board pieces themselves are styled by the real
+   SPA components + tokens (style.css); this file only styles the EDITOR around
+   them — toolbar, palette, canvas frame, selection handles. */
+
+html, body, #app { height: 100%; }
+#app {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+.dz {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Toolbar */
+.dz-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--hairline-strong);
+  background: var(--surface-raised);
+  flex-shrink: 0;
+  z-index: 20;
+}
+.dz-title {
+  font-family: var(--font-display), serif;
+  font-size: 14px;
+  color: var(--ink-100);
+  letter-spacing: -0.01em;
+}
+.dz-spacer { flex: 1; }
+.dz-sep { width: 1px; height: 18px; background: var(--hairline-strong); margin: 0 4px; }
+.dz-tool {
+  height: 28px;
+  padding: 0 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  color: var(--ink-90);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.dz-tool:hover:not(:disabled) { color: var(--amber); border-color: var(--cat-accent); }
+.dz-tool:disabled { opacity: 0.4; cursor: default; }
+.dz-tool.primary { background: var(--amber); color: #1a1408; border-color: transparent; }
+.dz-tool.primary:hover:not(:disabled) { background: var(--amber-hi); color: #1a1408; }
+.dz-tool.danger:hover:not(:disabled) { color: var(--cond-dmg); border-color: color-mix(in oklab, var(--cond-dmg) 45%, transparent); }
+
+/* Palette */
+.dz-palette {
+  position: absolute;
+  top: 44px;
+  right: 10px;
+  z-index: 30;
+  width: 240px;
+  padding: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dz-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--ink-90);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.dz-palette-item:hover { background: var(--bg-4); color: var(--ink-100); }
+.dz-palette-label { font-weight: 600; }
+.dz-palette-kind {
+  font-family: var(--font-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+
+/* Stage + canvas */
+.dz-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 700px at 70% -10%, rgba(224, 176, 96, 0.035), transparent 60%),
+    var(--bg-0);
+}
+.dz-canvas {
+  position: relative;
+  transform-origin: center center;
+  background: var(--bg-0);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 20px 60px rgba(0, 0, 0, 0.55);
+  flex-shrink: 0;
+}
+
+/* Pieces */
+.dz-piece {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: grab;
+}
+.dz-piece:active { cursor: grabbing; }
+.dz-piece-body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none; /* clicks belong to the drag frame, not the board UI */
+}
+.dz-piece.selected {
+  outline: 1.5px solid var(--amber);
+  outline-offset: 1px;
+  z-index: 10;
+}
+.dz-piece-tag {
+  position: absolute;
+  left: 0;
+  top: -20px;
+  height: 18px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--amber);
+  color: #1a1408;
+  border-radius: 999px;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Resize handles */
+.dz-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--amber);
+  border: 1.5px solid #1a1408;
+  border-radius: 3px;
+  z-index: 11;
+}
+.dz-handle.h-nw { left: -6px; top: -6px; cursor: nwse-resize; }
+.dz-handle.h-n  { left: calc(50% - 6px); top: -6px; cursor: ns-resize; }
+.dz-handle.h-ne { right: -6px; top: -6px; cursor: nesw-resize; }
+.dz-handle.h-e  { right: -6px; top: calc(50% - 6px); cursor: ew-resize; }
+.dz-handle.h-se { right: -6px; bottom: -6px; cursor: nwse-resize; }
+.dz-handle.h-s  { left: calc(50% - 6px); bottom: -6px; cursor: ns-resize; }
+.dz-handle.h-sw { left: -6px; bottom: -6px; cursor: nesw-resize; }
+.dz-handle.h-w  { left: -6px; top: calc(50% - 6px); cursor: ew-resize; }
+
+/* Toast */
+.dz-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 8px 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--cat-accent);
+  border-radius: 999px;
+  color: var(--ink-100);
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}

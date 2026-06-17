@@ -1,0 +1,1028 @@
+/* VENDORED SNAPSHOT — do not edit here.
+   Copied from the Vaultkeeper SPA (web/src/style.css): the design tokens
+   (:root custom properties) + base resets the board leaves render against.
+   Re-sync from upstream rather than diverging; see vendor/README.md. */
+:root {
+  /* Surfaces — warm deep-brown stack */
+  --bg-0: #0b0806;
+  --bg-1: #120d09;
+  --bg-2: #1a120c;
+  --bg-3: #221810;
+  --bg-4: #2b1e14;
+  --surface-raised: #1e160f;
+
+  /* Hairlines */
+  --hairline: rgba(255, 220, 170, 0.06);
+  --hairline-strong: rgba(255, 220, 170, 0.10);
+
+  /* Ink — text */
+  --ink-100: #f3e7d3;
+  --ink-90:  #e6d4b6;
+  --ink-70:  #b8a684;
+  --ink-50:  #86775c;
+  --ink-30:  #5a4e3a;
+
+  /* Amber accent */
+  --amber:      #e0b060;
+  --amber-hi:   #f1c87a;
+  --amber-lo:   #b88a3a;
+  --amber-dim:  rgba(224, 176, 96, 0.15);
+  --amber-glow: rgba(224, 176, 96, 0.25);
+  --cat-accent: rgba(224, 176, 96, 0.55);
+
+  /* Mana pips (unchanged) */
+  --mtg-w: #f9f6e6;
+  --mtg-u: #5a8ac9;
+  --mtg-b: #3a3238;
+  --mtg-r: #d15a4a;
+  --mtg-g: #5a9364;
+  --mtg-c: #a8a8b2;
+
+  /* Rarity */
+  --r-common: #c8c8d0;
+  --r-uncommon: #9ab5c4;
+  --r-rare: #c9a24a;
+  --r-mythic: #d97742;
+
+  /* Card condition */
+  --cond-nm: #4ade80;
+  --cond-lp: #a3e635;
+  --cond-mp: #facc15;
+  --cond-hp: #fb923c;
+  --cond-dmg: #ef4444;
+
+  /* Typography */
+  --font-sans: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: var(--font-sans);
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius:    6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Card list dimensions. --card-image-h and --strip-expanded are
+     derived from --card-width per the Scryfall normal aspect (488×680). */
+  --sidebar-width: 240px;
+  --detail-width: 340px;
+  --card-image-h: calc(var(--card-width) * 680 / 488);
+  --strip-expanded: calc(var(--card-image-h) + var(--strip-height));
+
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-90);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Density variants — drive strip dimensions consumed by CardStrip.vue. */
+[data-density="compact"] {
+  --strip-height: 38px;
+  --strip-gap: 8px;
+  --card-width: 200px;
+}
+[data-density="default"] {
+  --strip-height: 46px;
+  --strip-gap: 10px;
+  --card-width: 250px;
+}
+[data-density="cozy"] {
+  --strip-height: 54px;
+  --strip-gap: 14px;
+  --card-width: 300px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: var(--ink-90);
+}
+
+body {
+  font-family: var(--font-sans), sans-serif;
+  background:
+    radial-gradient(1200px 700px at 70% -10%, rgba(224, 176, 96, 0.035), transparent 60%),
+    var(--bg-0);
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display), serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-100);
+  margin: 0;
+}
+
+a { color: var(--amber); text-decoration: none; }
+a:hover { color: var(--amber-hi); }
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: 1px solid var(--hairline);
+  background: var(--bg-2);
+  color: var(--ink-100);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+button:hover { background: var(--bg-1); border-color: var(--amber-lo); }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+button.primary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #1a1408;
+  font-weight: 600;
+}
+button.primary:hover { background: var(--amber-hi); }
+
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg-0);
+  color: var(--ink-100);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  width: 100%;
+}
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--amber-lo);
+}
+
+::placeholder { color: var(--ink-50); }
+::selection { background: var(--amber); color: #1a1408; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border-radius: 5px;
+  border: 2px solid var(--bg-1);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-30); }
+
+/* ============================================================
+   Wordmark — gold rotated diamond + serif name
+   ============================================================ */
+
+.vk-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display), serif;
+  font-weight: 500;
+  font-size: 20px;
+  /* line-height: 1 collapses the em-box so it matches the rendered glyph.
+     Without this, Newsreader's tall ascender padding leaves visible space
+     above the caps, which align-items: center then treats as part of the
+     text box — the icon ends up sitting BELOW the visual text midline. */
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink-100);
+}
+.vk-mark-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  flex-shrink: 0;
+  color: var(--amber);
+  overflow: visible; /* let the rotated outer outline's corners breathe past 18×18 */
+  /* Newsreader's visual baseline sits above the em-box center even after
+     line-height: 1. Nudge the icon up 2px to meet the rendered text. */
+  position: relative;
+  top: -2px;
+}
+
+/* ============================================================
+   Filter chip + dropdown menu (used in AppTopBar)
+   ============================================================ */
+
+/* Shared pill base — 32px inline-flex pill, rounded, default transition.
+   .vk-chip and .vk-btn only declare what differs (padding/gap/colors/weight/etc.). */
+.vk-chip,
+.vk-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.vk-chip {
+  padding: 0 12px;
+  gap: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--hairline);
+  color: var(--ink-70);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.vk-chip:hover { border-color: var(--ink-50); color: var(--ink-100); }
+.vk-chip.active {
+  background: color-mix(in oklab, var(--amber) 15%, var(--bg-2));
+  border-color: color-mix(in oklab, var(--amber) 40%, var(--hairline));
+  color: var(--amber);
+}
+.vk-chip.open {
+  border-color: var(--ink-50);
+  color: var(--ink-100);
+  background: var(--bg-1);
+}
+.vk-chip .caret { opacity: 0.5; font-size: 9px; }
+.vk-chip .tok-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.vk-chip .tok-dot.tok-c { background: #d97757; }
+.vk-chip .tok-dot.tok-t { background: #7aa6d9; }
+.vk-chip .tok-dot.tok-r { background: #c49b4a; }
+.vk-chip .tok-dot.tok-set { background: #8fab7a; }
+.vk-chip .tok-dot.tok-sort { background: #a89bc2; }
+
+/* Deck-view pill variants — override the base .vk-chip shape. Left group
+   (filters) uses --ghost: transparent with a hairline border. Right group
+   (groupings) uses --solid: filled pill with a small amber dot. */
+.vk-chip.vk-chip--ghost,
+.vk-chip.vk-chip--solid {
+  height: auto;
+  padding: 5px 10px;
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.vk-chip.vk-chip--ghost {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  color: var(--ink-90);
+}
+.vk-chip.vk-chip--ghost:hover {
+  background: var(--bg-2);
+  border-color: var(--hairline);
+  color: var(--ink-100);
+}
+.vk-chip.vk-chip--ghost.active {
+  background: var(--bg-2);
+  border-color: color-mix(in oklab, var(--amber) 40%, var(--hairline));
+  color: var(--ink-100);
+}
+.vk-chip.vk-chip--ghost.open {
+  background: var(--bg-2);
+  border-color: var(--hairline-strong);
+  color: var(--ink-100);
+}
+.vk-chip.vk-chip--solid {
+  background: var(--bg-3);
+  border: 1px solid transparent;
+  color: var(--ink-90);
+}
+.vk-chip.vk-chip--solid:hover,
+.vk-chip.vk-chip--solid.active,
+.vk-chip.vk-chip--solid.open {
+  background: var(--bg-4);
+  border-color: transparent;
+  color: var(--ink-100);
+}
+.vk-chip.vk-chip--solid .dot-accent {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.vk-chip.vk-chip--ghost .caret,
+.vk-chip.vk-chip--solid .caret {
+  color: var(--ink-50);
+}
+
+.vk-chip-wrap { position: relative; display: inline-flex; }
+.vk-chip-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  background: var(--bg-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  padding: 4px;
+  z-index: 100;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.vk-chip-menu.right { left: auto; right: 0; }
+.vk-chip-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 10px;
+  color: var(--ink-70);
+  font-size: 12px;
+  border-radius: 3px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+.vk-chip-menu-item:hover { background: var(--bg-2); color: var(--ink-100); }
+.vk-chip-menu-item.active {
+  background: color-mix(in oklab, var(--amber) 15%, var(--bg-2));
+  color: var(--amber);
+}
+.vk-chip-menu-item .tok-hint {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: var(--ink-30);
+  letter-spacing: 0;
+}
+.vk-chip-menu-item.active .tok-hint { color: var(--amber); opacity: 0.7; }
+
+/* ============================================================
+   Syntax search — colored token overlay over a transparent input
+   ============================================================ */
+
+.vk-syntax-search {
+  flex: 1;
+  min-width: 200px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 12px;
+  background: var(--bg-0);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.vk-syntax-search.focused {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-dim);
+}
+.vk-syntax-field {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.vk-syntax-tokens,
+.vk-syntax-input {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  line-height: 1;
+  white-space: pre;
+  letter-spacing: 0;
+}
+.vk-syntax-tokens { pointer-events: none; color: var(--ink-90); }
+.vk-syntax-tokens .sp { white-space: pre; }
+.vk-syntax-tokens .tok {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 3px;
+  padding: 2px 0;
+}
+.vk-syntax-tokens .tok-text { color: var(--ink-90); }
+.vk-syntax-tokens .tok-key { color: var(--ink-90); font-weight: 600; }
+.vk-syntax-tokens .tok-op { color: var(--ink-50); }
+.vk-syntax-tokens .tok-val { color: var(--ink-90); }
+.vk-syntax-tokens .tok-neg { color: #d46a6a; font-weight: 600; margin-right: 1px; }
+
+.vk-syntax-tokens .tok-c .tok-key,
+.vk-syntax-tokens .tok-c .tok-val,
+.vk-syntax-tokens .tok-color .tok-key,
+.vk-syntax-tokens .tok-color .tok-val,
+.vk-syntax-tokens .tok-id .tok-key,
+.vk-syntax-tokens .tok-id .tok-val { color: #d97757; }
+
+.vk-syntax-tokens .tok-t .tok-key,
+.vk-syntax-tokens .tok-t .tok-val,
+.vk-syntax-tokens .tok-type .tok-key,
+.vk-syntax-tokens .tok-type .tok-val { color: #7aa6d9; }
+
+.vk-syntax-tokens .tok-r .tok-key,
+.vk-syntax-tokens .tok-r .tok-val,
+.vk-syntax-tokens .tok-rarity .tok-key,
+.vk-syntax-tokens .tok-rarity .tok-val { color: #c49b4a; }
+
+.vk-syntax-tokens .tok-set .tok-key,
+.vk-syntax-tokens .tok-set .tok-val,
+.vk-syntax-tokens .tok-s .tok-key,
+.vk-syntax-tokens .tok-s .tok-val,
+.vk-syntax-tokens .tok-e .tok-key,
+.vk-syntax-tokens .tok-e .tok-val { color: #8fab7a; }
+
+.vk-syntax-tokens .tok-sort .tok-key,
+.vk-syntax-tokens .tok-sort .tok-val,
+.vk-syntax-tokens .tok-order .tok-key,
+.vk-syntax-tokens .tok-order .tok-val { color: #a89bc2; }
+
+.vk-syntax-input {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: transparent;
+  caret-color: var(--ink-100);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.vk-syntax-input::placeholder {
+  color: var(--ink-50);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.vk-syntax-input::selection {
+  background: color-mix(in oklab, var(--amber) 40%, transparent);
+  color: var(--ink-100);
+}
+
+.vk-syntax-help {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--ink-50);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.1s ease, border-color 0.1s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+.vk-syntax-help:hover { color: var(--ink-100); border-color: var(--ink-30); }
+.vk-syntax-search .kbd {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: var(--ink-70);
+  padding: 2px 6px;
+  background: var(--bg-3);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Primary VK button (uppercase gold)
+   ============================================================ */
+
+.vk-btn {
+  padding: 0 16px;
+  gap: 8px;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vk-btn-primary {
+  background: var(--amber);
+  color: #1a1408;
+}
+.vk-btn-primary:hover { background: var(--amber-hi); }
+.vk-btn-ghost {
+  background: transparent;
+  color: var(--ink-70);
+  border: 1px solid var(--hairline);
+}
+.vk-btn-ghost:hover { color: var(--ink-100); border-color: var(--ink-30); }
+
+/* ============================================================
+   Auth screens (login + register share this shell)
+   ============================================================ */
+
+.vk-login {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  background: var(--bg-0);
+}
+.vk-login-form-side {
+  padding: 56px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+  border-right: 1px solid var(--hairline);
+  overflow-y: auto;
+}
+.vk-login-form {
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 48px;
+}
+.vk-login-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vk-login-eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--amber);
+}
+.vk-login-title {
+  font-family: var(--font-display), serif;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink-100);
+  margin: 0 0 12px;
+}
+.vk-login-title em {
+  font-style: italic;
+  color: var(--amber);
+}
+.vk-login-sub {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-70);
+  margin: 0 0 32px;
+  max-width: 320px;
+}
+.vk-login-input {
+  display: block;
+  margin-bottom: 14px;
+}
+.vk-login-input span {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+  margin-bottom: 6px;
+}
+/* Only declare what differs from the base input rule (width, border, radius,
+   color, focus are all inherited from `input, select, textarea` above). */
+.vk-login-input input {
+  height: 44px;
+  padding: 0 14px;
+  background: var(--bg-1);
+  font-size: 14px;
+  transition: border-color 0.12s ease;
+}
+.vk-login-input input.invalid {
+  border-color: #d46a6a;
+}
+.vk-login-input .field-hint {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-50);
+  margin-top: 6px;
+  font-weight: 400;
+}
+.vk-login-input .field-hint.error {
+  color: #d46a6a;
+}
+.vk-login-input .field-hint.suggestion {
+  color: var(--amber-lo);
+}
+.vk-login-input .field-hint.suggestion a {
+  color: var(--amber);
+  border-bottom: 1px dotted var(--amber-lo);
+  cursor: pointer;
+}
+.vk-login-input .field-hint.suggestion a:hover {
+  color: var(--amber-hi);
+  border-bottom-color: var(--amber);
+}
+.vk-login-btn {
+  width: 100%;
+  height: 48px;
+  background: var(--amber);
+  color: #1a1408;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.vk-login-btn:hover:not(:disabled) {
+  background: var(--amber-hi);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--amber-glow);
+}
+.vk-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.vk-login-error {
+  color: #d46a6a;
+  font-size: 12px;
+  margin: 12px 0 0;
+}
+.vk-login-meta {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-50);
+  gap: 16px;
+}
+.vk-login-meta a {
+  color: var(--ink-70);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--ink-30);
+  cursor: pointer;
+  background: transparent;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  padding: 0 0 1px;
+  font-family: inherit;
+  font-size: inherit;
+}
+.vk-login-meta a:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.vk-login-guest {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+.vk-login-guest-rule {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  background: var(--bg-0);
+  padding-right: 10px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-30);
+}
+.vk-login-guest-btn {
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-90);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  width: 100%;
+  text-align: left;
+}
+.vk-login-guest-btn:hover {
+  color: var(--amber-hi);
+  border-color: color-mix(in oklab, var(--amber) 45%, var(--hairline));
+  background: color-mix(in oklab, var(--amber) 8%, transparent);
+}
+.vk-login-foot {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: var(--ink-30);
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+}
+.vk-login-hero-side {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-1);
+  background-image:
+    radial-gradient(ellipse at 70% 30%, var(--amber-glow), transparent 50%),
+    radial-gradient(ellipse at 30% 80%, rgba(93, 58, 110, 0.15), transparent 50%);
+}
+.vk-hero-bottom {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  z-index: 4;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+@media (max-width: 900px) {
+  .vk-login {
+    grid-template-columns: 1fr;
+  }
+  .vk-login-hero-side {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * DB-3 deckbuilder: shared red-glow for illegal cards/decks and the
+ * game-changer pill. illegal-glow stacks with ownership shine-* classes.
+ * ──────────────────────────────────────────────────────────────────── */
+.illegal-glow {
+  box-shadow:
+    0 0 0 2px rgba(209, 90, 74, 0.65),
+    0 0 18px 4px rgba(209, 90, 74, 0.35);
+  animation: illegal-pulse 2.4s ease-in-out infinite;
+}
+@keyframes illegal-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(209, 90, 74, 0.5),
+      0 0 14px 3px rgba(209, 90, 74, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(209, 90, 74, 0.8),
+      0 0 22px 6px rgba(209, 90, 74, 0.45);
+  }
+}
+
+.gc-badge {
+  background: linear-gradient(135deg, var(--amber), var(--amber-lo));
+  color: #1a1408;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+}
+
+/* During an active sidebar drag, kill the shell grid's transition so the
+   sidebar tracks the pointer without easing behind it. Also suppress text
+   selection while the cursor sweeps across the page. The class is set on
+   <html> by LocationSidebar's resize handler. */
+html.is-resizing-sidebar .collection-shell,
+html.is-resizing-sidebar .deck-shell {
+  transition: none !important;
+}
+html.is-resizing-sidebar,
+html.is-resizing-sidebar * {
+  user-select: none !important;
+  cursor: col-resize !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   VIEW TRANSITIONS
+   ════════════════════════════════════════════════════════════
+
+   SPA navigations are wrapped in document.startViewTransition()
+   by the router (router/index.js), which stamps <html data-vt="…">
+   with the *kind* of move it is. Each kind gets its own
+   choreography below; the JS never animates anything, it only
+   names the move:
+
+     fade        default cross-dissolve, top bar held in place
+     forward     drilling collection → deck (settle inward)
+     back        stepping deck → collection (settle outward)
+     panel-in    secondary page pushes in from the right (drawer)
+     panel-out   secondary page slides back out to the right
+     auth-open   login's two halves part like doors → app revealed
+     auth-close  sign-out: the doors close back over the app
+
+   Tuned to feel smooth but never sluggish — nothing here runs
+   longer than the door reveal at ~520ms, most moves are ~200ms.
+   prefers-reduced-motion disables all of it (and the router skips
+   the transition entirely too, as a belt-and-braces measure).
+
+   The `@view-transition` at-rule is the forward-looking hook that
+   would light up automatically if a route ever became a real
+   cross-document navigation.
+   ──────────────────────────────────────────────────────────── */
+@view-transition {
+  navigation: auto;
+}
+
+/* Shared easings ------------------------------------------------ */
+:root {
+  /* material standard — quick crossfades where travel is tiny */
+  --vt-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* drawer glide — gentle accel, smooth decel, motion stays trackable
+     through the middle so the slide reads as a glide, not a cut */
+  --vt-ease-drawer: cubic-bezier(0.5, 0, 0.2, 1);
+  /* the doors: a symmetric ease-in-out so they part with visible, even
+     travel across the whole arc — a deliberate reveal, never a snap */
+  --vt-ease-door: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ── Default: snappy cross-dissolve ───────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--vt-ease);
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation-name: vk-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: vk-fade-in;
+}
+
+@keyframes vk-fade-out {
+  to { opacity: 0; }
+}
+@keyframes vk-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* ── Persistent top bar ───────────────────────────────────────
+   The top bar is structurally per-view but visually constant across
+   in-app routes. A stable name lifts it out of the root animation so
+   it crossfades in place instead of blinking with the whole page.
+   It's un-named for the door + drawer moves (below), where it must
+   travel *with* its page rather than float independently. */
+.vk-topbar {
+  view-transition-name: vk-topbar;
+}
+::view-transition-old(vk-topbar),
+::view-transition-new(vk-topbar) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--vt-ease);
+}
+:root[data-vt="panel-in"] .vk-topbar,
+:root[data-vt="panel-out"] .vk-topbar,
+:root[data-vt="auth-open"] .vk-topbar,
+:root[data-vt="auth-close"] .vk-topbar {
+  view-transition-name: none;
+}
+
+/* ── forward / back: drilling between collection and a deck ───── */
+:root[data-vt="forward"]::view-transition-new(root) {
+  animation: vk-drill-in 240ms var(--vt-ease) both;
+}
+:root[data-vt="forward"]::view-transition-old(root) {
+  animation: vk-drill-out-back 240ms var(--vt-ease) both;
+}
+:root[data-vt="back"]::view-transition-new(root) {
+  animation: vk-drill-in-back 240ms var(--vt-ease) both;
+}
+:root[data-vt="back"]::view-transition-old(root) {
+  animation: vk-drill-out 240ms var(--vt-ease) both;
+}
+/* moving forward: new view settles in slightly enlarged → 1 */
+@keyframes vk-drill-in {
+  from { opacity: 0; transform: scale(1.015); }
+}
+@keyframes vk-drill-out-back {
+  to { opacity: 0; transform: scale(0.99); }
+}
+/* moving back: new view eases out from a hair zoomed-in */
+@keyframes vk-drill-in-back {
+  from { opacity: 0; transform: scale(0.99); }
+}
+@keyframes vk-drill-out {
+  to { opacity: 0; transform: scale(1.015); }
+}
+
+/* ── panel-in / panel-out: secondary pages as a right-side drawer ─
+   The incoming page slides over the app from the right with a soft
+   cast shadow; the app underneath dips back a touch for depth. */
+:root[data-vt="panel-in"]::view-transition-new(root) {
+  animation: vk-drawer-in 340ms var(--vt-ease-drawer) both;
+  z-index: 2;
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.5);
+}
+:root[data-vt="panel-in"]::view-transition-old(root) {
+  animation: vk-recede 340ms var(--vt-ease-drawer) both;
+}
+@keyframes vk-drawer-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes vk-recede {
+  to { transform: scale(0.97); filter: brightness(0.7); }
+}
+/* leaving: the drawer slides back out to the right, app returns */
+:root[data-vt="panel-out"]::view-transition-old(root) {
+  animation: vk-drawer-out 320ms var(--vt-ease-drawer) both;
+  z-index: 2;
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.5);
+}
+:root[data-vt="panel-out"]::view-transition-new(root) {
+  animation: vk-return 320ms var(--vt-ease-drawer) both;
+}
+@keyframes vk-drawer-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+@keyframes vk-return {
+  from { transform: scale(0.97); filter: brightness(0.7); }
+  to   { transform: scale(1); filter: none; }
+}
+
+/* ── auth-open / auth-close: the double-door reveal ───────────────
+   The login screen is a two-column grid; naming each half lets the
+   View Transitions API peel them apart independently. On the way in
+   they slide off-screen left/right to unveil the app; on sign-out
+   they sweep back shut over it. */
+.vk-login-form-side {
+  view-transition-name: auth-door-left;
+}
+.vk-login-hero-side {
+  view-transition-name: auth-door-right;
+}
+
+/* doors part to reveal the app, which waits mostly-formed behind them and
+   settles the last hair into place — so the parting doors are the story,
+   not a competing fade. */
+:root[data-vt="auth-open"]::view-transition-old(auth-door-left) {
+  animation: vk-door-out-left 560ms var(--vt-ease-door) both;
+  z-index: 10;
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.55);
+}
+:root[data-vt="auth-open"]::view-transition-old(auth-door-right) {
+  animation: vk-door-out-right 560ms var(--vt-ease-door) both;
+  z-index: 10;
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55);
+}
+:root[data-vt="auth-open"]::view-transition-new(root) {
+  animation: vk-reveal-in 560ms var(--vt-ease-door) both;
+}
+:root[data-vt="auth-open"]::view-transition-old(root) {
+  animation: vk-fade-out 260ms var(--vt-ease) both;
+}
+
+/* doors close back over a receding app */
+:root[data-vt="auth-close"]::view-transition-new(auth-door-left) {
+  animation: vk-door-out-left 500ms var(--vt-ease-door) reverse both;
+  z-index: 10;
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.55);
+}
+:root[data-vt="auth-close"]::view-transition-new(auth-door-right) {
+  animation: vk-door-out-right 500ms var(--vt-ease-door) reverse both;
+  z-index: 10;
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55);
+}
+:root[data-vt="auth-close"]::view-transition-old(root) {
+  animation: vk-reveal-in 500ms var(--vt-ease-door) reverse both;
+}
+:root[data-vt="auth-close"]::view-transition-new(root) {
+  animation: vk-fade-in 320ms var(--vt-ease) both;
+}
+
+@keyframes vk-door-out-left {
+  to { transform: translateX(-100%); }
+}
+@keyframes vk-door-out-right {
+  to { transform: translateX(100%); }
+}
+@keyframes vk-reveal-in {
+  from { opacity: 0.82; transform: scale(1.035); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Accessibility: honour reduced-motion everywhere ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
