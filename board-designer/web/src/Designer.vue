@@ -237,35 +237,40 @@ const ADDABLE = ['opponent', 'phases', 'stack', 'custom']
 
     <!-- Stage holds the scaled, fixed-size logical canvas -->
     <div ref="stageEl" class="dz-stage" @pointerdown="selectedId = null">
-      <div
-        ref="canvasEl"
-        class="dz-canvas"
-        :style="{ width: CANVAS.w + 'px', height: CANVAS.h + 'px', transform: `scale(${scale})` }"
-        @pointerdown.stop
-      >
+      <!-- Wrapper is sized to the SCALED canvas so flex-centering is exact even
+           when the logical canvas is larger than the viewport. The inner canvas
+           scales from its top-left to fill this wrapper. -->
+      <div class="dz-canvas-fit" :style="{ width: CANVAS.w * scale + 'px', height: CANVAS.h * scale + 'px' }">
         <div
-          v-for="p in pieces"
-          :key="p.id"
-          class="dz-piece"
-          :class="{ selected: p.id === selectedId }"
-          :style="{ left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px' }"
-          @pointerdown="startMove(p, $event)"
+          ref="canvasEl"
+          class="dz-canvas"
+          :style="{ width: CANVAS.w + 'px', height: CANVAS.h + 'px', transform: `scale(${scale})` }"
+          @pointerdown.stop
         >
-          <div class="dz-piece-body">
-            <PieceContent :piece="p" :snapshot="snapshot" :opponent="opponent" :images="images" />
-          </div>
+          <div
+            v-for="p in pieces"
+            :key="p.id"
+            class="dz-piece"
+            :class="{ selected: p.id === selectedId }"
+            :style="{ left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px' }"
+            @pointerdown="startMove(p, $event)"
+          >
+            <div class="dz-piece-body">
+              <PieceContent :piece="p" :snapshot="snapshot" :opponent="opponent" :images="images" />
+            </div>
 
-          <!-- Selection chrome (hidden in exports because selection is cleared) -->
-          <template v-if="p.id === selectedId">
-            <span class="dz-piece-tag">{{ p.title }}</span>
-            <span
-              v-for="h in HANDLES"
-              :key="h.k"
-              class="dz-handle"
-              :class="'h-' + h.k"
-              @pointerdown="startResize(p, h.edges, $event)"
-            />
-          </template>
+            <!-- Selection chrome (hidden in exports because selection is cleared) -->
+            <template v-if="p.id === selectedId">
+              <span class="dz-piece-tag">{{ p.title }}</span>
+              <span
+                v-for="h in HANDLES"
+                :key="h.k"
+                class="dz-handle"
+                :class="'h-' + h.k"
+                @pointerdown="startResize(p, h.edges, $event)"
+              />
+            </template>
+          </div>
         </div>
       </div>
     </div>

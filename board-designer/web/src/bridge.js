@@ -46,10 +46,17 @@ export function parseLayoutJson(text) {
 async function renderPng(canvasEl) {
   if (!canvasEl) return null
   try {
+    // The on-screen canvas carries a `scale()` transform to fit the viewport;
+    // capture it UNSCALED at full logical resolution for a crisp snapshot.
+    const w = canvasEl.offsetWidth
+    const h = canvasEl.offsetHeight
     return await toPng(canvasEl, {
       pixelRatio: 2,
       cacheBust: true,
       backgroundColor: '#0b0806',
+      width: w,
+      height: h,
+      style: { transform: 'none', transformOrigin: 'top left', margin: '0' },
     })
   } catch (e) {
     // Card art from Scryfall may taint the canvas (CORS) — degrade to JSON-only

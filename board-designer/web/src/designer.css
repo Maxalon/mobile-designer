@@ -19,16 +19,21 @@ html, body, #app { height: 100%; }
   touch-action: none;
 }
 
-/* Toolbar */
+/* Toolbar — pad past the status bar / notch (Android edge-to-edge WebView). */
 .dz-bar {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
+  padding-top: calc(6px + env(safe-area-inset-top));
+  padding-left: calc(10px + env(safe-area-inset-left));
+  padding-right: calc(10px + env(safe-area-inset-right));
   border-bottom: 1px solid var(--hairline-strong);
   background: var(--surface-raised);
   flex-shrink: 0;
   z-index: 20;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 .dz-title {
   font-family: var(--font-display), serif;
@@ -98,26 +103,38 @@ html, body, #app { height: 100%; }
   color: var(--ink-50);
 }
 
-/* Stage + canvas */
+/* Stage + canvas. Flex-centre a wrapper that is sized to the SCALED canvas —
+   centring an over-sized-then-scaled element directly is unreliable inside an
+   overflow:hidden scroll container (it clamps to the start edge). */
 .dz-stage {
   position: relative;
   flex: 1;
   min-height: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  padding: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  padding-left: calc(12px + env(safe-area-inset-left));
+  padding-right: calc(12px + env(safe-area-inset-right));
   background:
     radial-gradient(1200px 700px at 70% -10%, rgba(224, 176, 96, 0.035), transparent 60%),
     var(--bg-0);
 }
-.dz-canvas {
+.dz-canvas-fit {
   position: relative;
-  transform-origin: center center;
+  flex: 0 0 auto;
+}
+.dz-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
   background: var(--bg-0);
   border: 1px solid var(--hairline-strong);
   border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 20px 60px rgba(0, 0, 0, 0.55);
-  flex-shrink: 0;
 }
 
 /* Pieces */
