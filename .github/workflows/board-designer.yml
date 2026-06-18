@@ -12,6 +12,9 @@ on:
       - '.github/workflows/board-designer.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write   # publish the APK as a GitHub Release asset
+
 jobs:
   build:
     name: build
@@ -62,3 +65,22 @@ jobs:
         with:
           name: board-designer-debug-${{ github.run_number }}
           path: board-designer/android/app/build/outputs/apk/debug/*.apk
+
+      # On push to main, publish the APK as a GitHub Release asset so it has a
+      # permanent, login-free download link anyone can use (no zip, no account):
+      #   https://github.com/<owner>/mobile-designer/releases/latest/download/app-debug.apk
+      # Unique tag per run + make_latest keeps that `latest` URL pointing at the
+      # newest build.
+      - name: Publish APK to GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.0-${{ github.run_number }}
+          name: Board Designer build ${{ github.run_number }}
+          make_latest: true
+          body: |
+            Offline board-layout designer — debug APK (installs directly, debug-signed).
+
+            **Download:** `app-debug.apk` below, or the always-latest link:
+            `…/releases/latest/download/app-debug.apk`
+          files: board-designer/android/app/build/outputs/apk/debug/*.apk
