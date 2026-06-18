@@ -21,23 +21,75 @@ function othersOf(id) {
   return pieces.filter((p) => p.id !== id)
 }
 
-// ── Canvas scaling (logical 1280×720 → device) ──────────────────────────────
+// ── View transform: pan + zoom (logical 1280×720 → device) ──────────────────
+// The board is a fixed logical canvas rendered through a single view transform
+// `translate(tx,ty) scale(s)` (origin top-left). `fit()` sets the baseline; the
+// user can pinch-zoom, two-finger pan (or wheel-zoom on desktop) from there.
 const stageEl = ref(null)
 const canvasEl = ref(null)
-const scale = ref(1)
+const view = reactive({ scale: 1, tx: 0, ty: 0 })
+const fitScale = ref(1)
+const ZOOM_MIN = 0.4 // × fit
+const ZOOM_MAX = 8 // × fit
+const userTouched = ref(false) // once zoomed/panned, stop auto-fitting on resize
+
+function stageRect() {
+  return stageEl.value?.getBoundingClientRect() ?? { left: 0, top: 0, width: 0, height: 0 }
+}
+function clampScale(s) {
+  return Math.max(fitScale.value * ZOOM_MIN, Math.min(fitScale.value * ZOOM_MAX, s))
+}
+
 function fit() {
   const el = stageEl.value
   if (!el) return
-  const pad = 0
-  scale.value = Math.min(
-    (el.clientWidth - pad) / CANVAS.w,
-    (el.clientHeight - pad) / CANVAS.h,
-  )
+  const margin = 16
+  const s = Math.min((el.clientWidth - margin) / CANVAS.w, (el.clientHeight - margin) / CANVAS.h)
+  fitScale.value = s
+  view.scale = s
+  view.tx = (el.clientWidth - CANVAS.w * s) / 2
+  view.ty = (el.clientHeight - CANVAS.h * s) / 2
 }
+function onResize() {
+  if (userTouched.value) view.scale = clampScale(view.scale)
+  else fit()
+}
+function resetView() {
+  userTouched.value = false
+  fit()
+}
+
+const canvasStyle = computed(() => ({
+  width: CANVAS.w + 'px',
+  height: CANVAS.h + 'px',
+  transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`,
+}))
+const zoomPct = computed(() => Math.round((view.scale / (fitScale.value || 1)) * 100))
+
+// Zoom keeping the stage-local point (fx,fy) anchored under the cursor/focus.
+function zoomAt(fx, fy, newScale) {
+  const s = clampScale(newScale)
+  const wx = (fx - view.tx) / view.scale
+  const wy = (fy - view.ty) / view.scale
+  view.scale = s
+  view.tx = fx - wx * s
+  view.ty = fy - wy * s
+  userTouched.value = true
+}
+function zoomBy(factor) {
+  const r = stageRect()
+  zoomAt(r.width / 2, r.height / 2, view.scale * factor)
+}
+function onWheel(ev) {
+  ev.preventDefault()
+  const r = stageRect()
+  zoomAt(ev.clientX - r.left, ev.clientY - r.top, view.scale * Math.exp(-ev.deltaY * 0.0015))
+}
+
 let ro
 onMounted(() => {
   fit()
-  ro = new ResizeObserver(fit)
+  ro = new ResizeObserver(onResize)
   if (stageEl.value) ro.observe(stageEl.value)
   window.addEventListener('keydown', onKey)
 })
@@ -46,8 +98,17 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKey)
 })
 
-// ── Drag / resize ───────────────────────────────────────────────────────────
+// ── Unified pointer handling: pieces, view-pan, and 2-finger pinch ──────────
+// All pointers are tracked on the root so a second finger can promote a drag/pan
+// into a pinch. One finger on a piece moves it; one finger on the background
+// pans the view; two fingers pinch-zoom + pan together.
+const pointers = new Map() // pointerId → { x, y }
 const drag = reactive({ active: false, mode: null, id: null, edges: null, startRect: null, px: 0, py: 0, last: null })
+const pan = reactive({ active: false, px: 0, py: 0, moved: 0 })
+const pinch = reactive({ active: false, startDist: 1, wx: 0, wy: 0 })
+
+const distOf = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
+const midOf = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
 
 function startMove(piece, ev) {
   selectedId.value = piece.id
@@ -58,10 +119,7 @@ function startMove(piece, ev) {
   drag.last = { ...drag.startRect }
   drag.px = ev.clientX
   drag.py = ev.clientY
-  ev.target.setPointerCapture?.(ev.pointerId)
-  ev.preventDefault()
 }
-
 function startResize(piece, edges, ev) {
   selectedId.value = piece.id
   drag.active = true
@@ -72,32 +130,102 @@ function startResize(piece, edges, ev) {
   drag.last = { ...drag.startRect }
   drag.px = ev.clientX
   drag.py = ev.clientY
-  ev.target.setPointerCapture?.(ev.pointerId)
-  ev.stopPropagation()
-  ev.preventDefault()
+}
+
+function beginPinch() {
+  const [a, b] = [...pointers.values()]
+  const r = stageRect()
+  const mid = midOf(a, b)
+  pinch.active = true
+  pinch.startDist = distOf(a, b) || 1
+  pinch.scale0 = view.scale
+  pinch.wx = (mid.x - r.left - view.tx) / view.scale
+  pinch.wy = (mid.y - r.top - view.ty) / view.scale
+}
+
+function onPointerDown(ev) {
+  pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+  if (pointers.size === 2) {
+    drag.active = false // a 2nd finger promotes any move/pan into a pinch
+    pan.active = false
+    beginPinch()
+    return
+  }
+  if (pointers.size > 2) return
+
+  const t = ev.target
+  const handleEl = t.closest?.('.dz-handle')
+  const pieceEl = t.closest?.('.dz-piece')
+  if (handleEl && pieceEl) {
+    const piece = pieces.find((p) => p.id === pieceEl.dataset.id)
+    if (piece) startResize(piece, JSON.parse(handleEl.dataset.edges), ev)
+  } else if (pieceEl) {
+    const piece = pieces.find((p) => p.id === pieceEl.dataset.id)
+    if (piece) startMove(piece, ev)
+  } else {
+    // Background: pan the view; a tap (no movement) deselects.
+    pan.active = true
+    pan.px = ev.clientX
+    pan.py = ev.clientY
+    pan.moved = 0
+  }
 }
 
 function onPointerMove(ev) {
-  if (!drag.active) return
-  const dx = (ev.clientX - drag.px) / scale.value
-  const dy = (ev.clientY - drag.py) / scale.value
-  const piece = pieces.find((p) => p.id === drag.id)
-  if (!piece) return
-  const others = othersOf(drag.id)
-  let rect
-  if (drag.mode === 'move') {
-    rect = resolveMove(
-      { x: drag.startRect.x + dx, y: drag.startRect.y + dy, w: drag.startRect.w, h: drag.startRect.h },
-      others, CANVAS, drag.last,
-    )
-  } else {
-    rect = resolveResize(drag.startRect, dx, dy, drag.edges, others, CANVAS, drag.last)
+  if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
+
+  if (pinch.active && pointers.size >= 2) {
+    const [a, b] = [...pointers.values()]
+    const r = stageRect()
+    const mid = midOf(a, b)
+    const s = clampScale(pinch.scale0 * (distOf(a, b) / pinch.startDist))
+    view.scale = s
+    view.tx = mid.x - r.left - pinch.wx * s
+    view.ty = mid.y - r.top - pinch.wy * s
+    userTouched.value = true
+    return
   }
-  drag.last = rect
-  piece.x = rect.x
-  piece.y = rect.y
-  piece.w = rect.w
-  piece.h = rect.h
+
+  if (drag.active) {
+    const dx = (ev.clientX - drag.px) / view.scale
+    const dy = (ev.clientY - drag.py) / view.scale
+    const piece = pieces.find((p) => p.id === drag.id)
+    if (!piece) return
+    const others = othersOf(drag.id)
+    const rect = drag.mode === 'move'
+      ? resolveMove({ x: drag.startRect.x + dx, y: drag.startRect.y + dy, w: drag.startRect.w, h: drag.startRect.h }, others, CANVAS, drag.last)
+      : resolveResize(drag.startRect, dx, dy, drag.edges, others, CANVAS, drag.last)
+    drag.last = rect
+    piece.x = rect.x
+    piece.y = rect.y
+    piece.w = rect.w
+    piece.h = rect.h
+    return
+  }
+
+  if (pan.active) {
+    const dx = ev.clientX - pan.px
+    const dy = ev.clientY - pan.py
+    pan.px = ev.clientX
+    pan.py = ev.clientY
+    pan.moved += Math.abs(dx) + Math.abs(dy)
+    view.tx += dx
+    view.ty += dy
+    userTouched.value = true
+  }
+}
+
+function onPointerUp(ev) {
+  const backgroundTap = pan.active && pan.moved < 6
+  pointers.delete(ev.pointerId)
+  if (pointers.size < 2) pinch.active = false
+  if (pointers.size === 0) {
+    if (drag.active) endDrag()
+    if (pan.active) {
+      if (backgroundTap) selectedId.value = null
+      pan.active = false
+    }
+  }
 }
 
 function endDrag() {
@@ -211,7 +339,13 @@ const ADDABLE = ['opponent', 'phases', 'stack', 'custom']
 </script>
 
 <template>
-  <div class="dz" @pointermove="onPointerMove" @pointerup="endDrag" @pointercancel="endDrag">
+  <div
+    class="dz"
+    @pointerdown="onPointerDown"
+    @pointermove="onPointerMove"
+    @pointerup="onPointerUp"
+    @pointercancel="onPointerUp"
+  >
     <!-- Toolbar -->
     <header class="dz-bar">
       <span class="dz-title">Board Layout Designer</span>
@@ -219,6 +353,15 @@ const ADDABLE = ['opponent', 'phases', 'stack', 'custom']
       <button class="dz-tool" @click="paletteOpen = !paletteOpen">＋ Add piece</button>
       <button class="dz-tool" :disabled="!selected" @click="renameSelected">Rename</button>
       <button class="dz-tool danger" :disabled="!selected" @click="removeSelected">Remove</button>
+      <span class="dz-sep" />
+      <span class="dz-sep" />
+      <!-- Zoom (also: pinch / two-finger pan on touch, wheel on desktop) -->
+      <div class="dz-zoom">
+        <button class="dz-tool zoom" title="Zoom out" @click="zoomBy(1 / 1.25)">−</button>
+        <button class="dz-tool zoom pct" title="Reset to fit" @click="resetView">{{ zoomPct }}%</button>
+        <button class="dz-tool zoom" title="Zoom in" @click="zoomBy(1.25)">＋</button>
+        <button class="dz-tool" title="Fit board to screen" @click="resetView">Fit</button>
+      </div>
       <span class="dz-sep" />
       <button class="dz-tool" @click="onImport">Import…</button>
       <button class="dz-tool" @click="onReset">Reset</button>
@@ -235,42 +378,34 @@ const ADDABLE = ['opponent', 'phases', 'stack', 'custom']
       </button>
     </div>
 
-    <!-- Stage holds the scaled, fixed-size logical canvas -->
-    <div ref="stageEl" class="dz-stage" @pointerdown="selectedId = null">
-      <!-- Wrapper is sized to the SCALED canvas so flex-centering is exact even
-           when the logical canvas is larger than the viewport. The inner canvas
-           scales from its top-left to fill this wrapper. -->
-      <div class="dz-canvas-fit" :style="{ width: CANVAS.w * scale + 'px', height: CANVAS.h * scale + 'px' }">
+    <!-- Stage: the pan/zoom surface. The canvas is positioned entirely by the
+         view transform (translate + scale). Wheel zooms on desktop; pinch /
+         two-finger pan on touch (handled on the root). -->
+    <div ref="stageEl" class="dz-stage" @wheel="onWheel">
+      <div ref="canvasEl" class="dz-canvas" :style="canvasStyle">
         <div
-          ref="canvasEl"
-          class="dz-canvas"
-          :style="{ width: CANVAS.w + 'px', height: CANVAS.h + 'px', transform: `scale(${scale})` }"
-          @pointerdown.stop
+          v-for="p in pieces"
+          :key="p.id"
+          class="dz-piece"
+          :class="{ selected: p.id === selectedId }"
+          :data-id="p.id"
+          :style="{ left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px' }"
         >
-          <div
-            v-for="p in pieces"
-            :key="p.id"
-            class="dz-piece"
-            :class="{ selected: p.id === selectedId }"
-            :style="{ left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px' }"
-            @pointerdown="startMove(p, $event)"
-          >
-            <div class="dz-piece-body">
-              <PieceContent :piece="p" :snapshot="snapshot" :opponent="opponent" :images="images" />
-            </div>
-
-            <!-- Selection chrome (hidden in exports because selection is cleared) -->
-            <template v-if="p.id === selectedId">
-              <span class="dz-piece-tag">{{ p.title }}</span>
-              <span
-                v-for="h in HANDLES"
-                :key="h.k"
-                class="dz-handle"
-                :class="'h-' + h.k"
-                @pointerdown="startResize(p, h.edges, $event)"
-              />
-            </template>
+          <div class="dz-piece-body">
+            <PieceContent :piece="p" :snapshot="snapshot" :opponent="opponent" :images="images" />
           </div>
+
+          <!-- Selection chrome (hidden in exports because selection is cleared) -->
+          <template v-if="p.id === selectedId">
+            <span class="dz-piece-tag">{{ p.title }}</span>
+            <span
+              v-for="h in HANDLES"
+              :key="h.k"
+              class="dz-handle"
+              :class="'h-' + h.k"
+              :data-edges="JSON.stringify(h.edges)"
+            />
+          </template>
         </div>
       </div>
     </div>

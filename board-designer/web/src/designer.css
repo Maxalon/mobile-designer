@@ -43,6 +43,16 @@ html, body, #app { height: 100%; }
 }
 .dz-spacer { flex: 1; }
 .dz-sep { width: 1px; height: 18px; background: var(--hairline-strong); margin: 0 4px; }
+
+/* Zoom controls */
+.dz-zoom { display: inline-flex; align-items: center; gap: 4px; }
+.dz-tool.zoom {
+  min-width: 30px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dz-tool.zoom.pct { min-width: 52px; font-size: 11px; }
 .dz-tool {
   height: 28px;
   padding: 0 12px;
@@ -122,15 +132,12 @@ html, body, #app { height: 100%; }
     radial-gradient(1200px 700px at 70% -10%, rgba(224, 176, 96, 0.035), transparent 60%),
     var(--bg-0);
 }
-.dz-canvas-fit {
-  position: relative;
-  flex: 0 0 auto;
-}
 .dz-canvas {
   position: absolute;
   top: 0;
   left: 0;
   transform-origin: top left;
+  will-change: transform;
   background: var(--bg-0);
   border: 1px solid var(--hairline-strong);
   border-radius: 2px;
